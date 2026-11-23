@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anime-upscale"
+version = "0.1.0"
+description = "CLI tool for upscaling anime/videos using realesrgan-ncnn-vulkan and FFmpeg with frame caching."
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "tqdm>=4.60.0",
+]
+
+[project.scripts]
+anime-upscale = "anime_upscale.cli:main"
+
+[project.urls]
+Repository = "https://github.com/NicolasBreval/Anime-Upscale"
+Issues = "https://github.com/NicolasBreval/Anime-Upscale/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["anime_upscale*"]
