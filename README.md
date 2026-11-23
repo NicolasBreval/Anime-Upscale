@@ -174,3 +174,41 @@ anime-upscale \
 | `--max-frames` | `int` | `None` | Maximum number of frames to extract and process per video (useful for quick benchmarks and testing) |
 | `--temp-dir` | `str` | `None` | Base directory for temporary working folders and the global cache. Defaults to the system temporary directory; pointing this to a fast SSD/NVMe is recommended |
 | `--log-file` | `str` | `None` | Optional base path or directory for per-video `.log` files. By default, each video writes `<output_video_stem>.log` next to the output video file[cite: 4] |
+
+---
+
+## Git Hooks & Commit Conventions
+
+This repository includes a local `commit-msg` hook under `scripts/hooks/commit-msg` and an installer script at `scripts/install-hooks.sh` to enforce **Conventional Commits** locally before commits are recorded.
+
+### Install the Git Hooks
+Run the installer from the root of the repository:
+
+```bash
+bash scripts/install-hooks.sh
+```
+
+This copies scripts/hooks/commit-msg into .git/hooks/commit-msg and marks it as executable. For Windows, you need to use Git Bash.
+
+### Expected Commit Format
+
+Commit subjects (first line) should follow:
+
+```plaintext
+<type>(<optional-scope>): <short description>
+```
+
+* Allowed types: feat, fix, docs, chore, ci, refactor, perf, test
+* Example: feat(cli): add --check-deps flag
+
+### Verify the Hook Locally
+
+* Invalid message (rejected):
+```bash
+git commit --allow-empty -m "wip changes"
+```
+
+* Valid message (accepted):
+```bash
+git commit --allow-empty -m "chore(hooks): configure local commit-msg hook"
+```

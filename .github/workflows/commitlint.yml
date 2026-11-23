@@ -1,0 +1,68 @@
+name: Validate Commit Messages
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches-ignore: [main]
+
+jobs:
+  check-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        shell: bash
+        run: |
+          python3 - <<'EOF'
+          import os
+          import re
+          import subprocess
+
+          pattern = re.compile(
+              r"^(feat|fix|docs|chore|ci|refactor|perf|test)(\([a-z0-9._-]+\))?!?: .+"
+          )
+
+          event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+          base_ref = os.environ.get("GITHUB_BASE_REF", "")
+
+          if event_name == "pull_request" and base_ref:
+              range_expr = f"origin/{base_ref}..HEAD"
+          else:
+              # Fallback for single commit or push
+              has_parent = subprocess.run(
+                  ["git", "rev-parse", "--verify", "HEAD~1"],
+                  stdout=subprocess.DEVNULL,
+                  stderr=subprocess.DEVNULL,
+              ).returncode == 0
+              range_expr = "HEAD~1..HEAD" if has_parent else "HEAD"
+
+          log_out = subprocess.check_output(
+              ["git", "log", range_expr, "--format=%H%x09%s"],
+              text=True,
+          ).splitlines()
+
+          errors = []
+          for line in log_out:
+              if not line.strip():
+                  continue
+              sha, subject = line.split("\t", 1)
+              # Allow standard merge commits if needed
+              if subject.startswith("Merge "):
+                  continue
+              if not pattern.match(subject):
+                  errors.append(f"{sha[:7]}: '{subject}'")
+
+          if errors:
+              print("Invalid commit message format detected (expected Conventional Commits):")
+              for err in errors:
+                  print("  -", err)
+              print("\nExample: feat(cli): add --check-deps flag")
+              raise SystemExit(1)
+
+          print(f"Validated {len(log_out)} commit(s) successfully.")
+          EOF
